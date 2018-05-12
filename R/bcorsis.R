@@ -107,7 +107,9 @@
 #' p <- 3000
 #' sigma_mat <- matrix(0.5, nrow = p, ncol = p)
 #' diag(sigma_mat) <- 1
+#' x <- rmvnorm(n = n, sigma = sigma_mat)
 #' error <- rnorm(n)
+#' rm(sigma_mat); gc(reset = TRUE)
 #' y <- 3*(x[, 1])^2 + 5*(x[, 2])^2 + 5*x[, 8] - 8*x[, 16] + error
 #' res <- bcorsis(y = y, x = x, method = "gam", d = 15)
 #' res[[1]]
@@ -127,7 +129,7 @@ bcorsis <- function(x, y, d = "small", weight = FALSE,
   ids <- 1:p
   
   # decide candicate size
-  final_d <- examine_candiate_size(n, d)
+  final_d <- examine_candiate_size(n, d, p)
   
   # get arguments:
   d1 <- parms$d1
@@ -272,11 +274,13 @@ bcorsis.surv <- function(y, x, final_d, n, p, ids, standized = TRUE){
     }, Sc, rep_num, SIMPLIFY = FALSE)
     Sc <- unlist(Sc)
   }
-  rcory_result <- apply(x, 2, function(x){
-    bcor_surv(x = x, t = ord.t, delta = ord.delta, Sc = Sc, n = n)
-  })
-  Xhavepickout <- get_screened_vars(ids, rcory_result, final_d)
   
+  t_rank <- rank(ord.t, ties.method = "max") - 1
+  rcory_result <- apply(x, 2, function(x){
+    bcor_surv(x = x, time_value = t_rank, delta = ord.delta, Sc = Sc, n = n)
+  })
+  
+  Xhavepickout <- get_screened_vars(ids, rcory_result, final_d)
   Xhavepickout
 }
 

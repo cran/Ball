@@ -13,13 +13,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifndef SURV_H_
-#define SURV_H_
-
-
-void SRCT(double *x, double *t, int *delta, double *Sc, int *n, double *RCTV);
-void SRCT_new(double *x, int *t, int *delta, double *Sc, int *n, double *RCTV);
+#ifndef API_R_H_
+#define API_R_H_
 
 
-#endif /* SURV_H_ */
+void print_stop_message_internal();
+void R_check_interrupt_fn(void *dummy);
+int pending_interrupt_status();
+int r_available_rand();
+int random_index(int n, int i);
+int random_index2(int i);
+
+#endif /* API_R_H_ */

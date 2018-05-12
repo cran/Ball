@@ -13,6 +13,7 @@
 ## @param type If \code{type = 'bcor'}, ball correlation will be used instead of ball covariance.(default \code{type = 'bcov'})
 ## @param method if \code{method = 'permute'}, a permutation procedure will be carried out;
 ## if \code{method = 'approx'}, the p-values based on approximate Ball Covariance distribution are given.(Test arguments)
+#' @param num.threads Number of threads. Default \code{num.threads = 2}.
 #' 
 #' @return bcov.test returns a list with class "htest" containing the following components:
 #' \item{\code{statistic}}{ball covariance or ball correlation statistic.}            
@@ -72,32 +73,30 @@
 #' # Distance matrix between x:
 #' Dx <- dist(ArcticLake[["depth"]])
 #' # hypothesis test with BCov:
-#' bcov.test(x = Dx, y = Dy, R = 99, dst = TRUE)
+#' bcov.test(x = Dx, y = Dy, dst = TRUE)
 #' 
 #' ################  Weighted Ball Covariance Test  #################
 #' data("ArcticLake")
 #' Dy <- nhdist(ArcticLake[["x"]], method = "compositional")
 #' Dx <- dist(ArcticLake[["depth"]])
 #' # hypothesis test with weighted BCov:
-#' bcov.test(x = Dx, y = Dy, R = 99, dst = TRUE, weight = TRUE)
+#' bcov.test(x = Dx, y = Dy, dst = TRUE, weight = TRUE)
 #' 
 #' ################# Mutual Independence Test #################
+#' \dontrun{
 #' x <- rnorm(30)
 #' y <- (x > 0) * x + rnorm(30)
 #' z <- (x <= 0) * x + rnorm(30)
 #' data_list <- list(x, y, z)
-#' Sys.time()
 #' bcov.test(data_list)
-#' Sys.time()
 #' 
 #' ################# Mutual Independence Test for Meteorology data #################
-#' \dontrun{
 #' data("meteorology")
 #' bcov.test(meteorology)
 #' }
 #' 
 bcov.test <- function(x, y = NULL, R = 99, dst = FALSE, weight = FALSE, 
-                      seed = 4)
+                      seed = 4, num.threads = 2)
 {
   method = 'permute'
   data_name <- paste(deparse(substitute(x)), "and", deparse(substitute(y)))
@@ -107,29 +106,33 @@ bcov.test <- function(x, y = NULL, R = 99, dst = FALSE, weight = FALSE,
     data_name <- gsub(x = data_name, pattern = " and NULL", replacement = "")
   }
   result <- bcov_test_internal_wrap(x = x, y = y, R = R, dst = dst, weight = weight, 
-                                    seed = seed, method = method, type = type)
+                                    seed = seed, method = method, type = type, num.threads = num.threads)
   # return result of hypothesis test:
-  data_name <- paste0(data_name,"\nnumber of observations = ", result[["N"]])
-  data_name <- paste0(data_name, "\nreplicates = ", R, 
-                      ", Weighted Ball Covariance = ", weight)
-  test_method <- "Ball Covariance test of independence"
-  if(type == "bcor") {
-    test_method <- gsub(pattern = "Covariance", replacement = "Correlation", x = test_method)
-    data_name <- gsub(pattern = "Covariance", replacement = "Correlation", x = data_name)
+  if(R == 0) {
+    return(result)
+  } else {
+    data_name <- paste0(data_name,"\nnumber of observations = ", result[["N"]])
+    data_name <- paste0(data_name, "\nreplicates = ", R, 
+                        ", Weighted Ball Covariance = ", weight)
+    test_method <- "Ball Covariance test of independence"
+    if(type == "bcor") {
+      test_method <- gsub(pattern = "Covariance", replacement = "Correlation", x = test_method)
+      data_name <- gsub(pattern = "Covariance", replacement = "Correlation", x = data_name)
+    }
+    alternative_message <- "random variables are dependent"
+    e <- list(
+      statistic = result[["statistic"]],
+      permuted_stat = result[["permuted_stat"]],
+      p.value = result[["p.value"]],
+      replicates = R,
+      size = result[["N"]],
+      alternative = alternative_message,
+      method = test_method,
+      data.name = data_name
+    )
+    class(e) <- "htest"
+    return(e)
   }
-  alternative_message <- "random variables are dependent"
-  e <- list(
-    statistic = result[["statistic"]],
-    permuted_stat = result[["permuted_stat"]],
-    p.value = result[["p.value"]],
-    replicates = R,
-    size = result[["N"]],
-    alternative = alternative_message,
-    method = test_method,
-    data.name = data_name
-  )
-  class(e) <- "htest"
-  return(e)
 }
 
 
@@ -139,7 +142,7 @@ bcov.test <- function(x, y = NULL, R = 99, dst = FALSE, weight = FALSE,
 #'
 #' @noRd
 bcov_test_internal <- function(x, y, R = 99, dst = FALSE, weight = FALSE, 
-                               seed = 4, method = 'permute', type = 'bcov')
+                               seed = 4, method = 'permute', type = 'bcov', num.threads)
 {
   x <- as.matrix(x)
   y <- as.matrix(y)
@@ -169,7 +172,7 @@ bcov_test_internal <- function(x, y, R = 99, dst = FALSE, weight = FALSE,
   }
   #
   if(R == 0) {
-    result <- bcov_value_wrap_c(x = x, y = y, n = num, weight = weight, dst =  dst, type = type)
+    result <- bcov_value_wrap_c(x = x, y = y, n = num, weight = weight, dst = dst, type = type, num.threads = num.threads)
     if(method == "approx") {
       pvalue <- calculatePvalue(result[["statistic"]] * result[["info"]][["N"]], 
                                 BITestNullDistribution)
@@ -178,7 +181,7 @@ bcov_test_internal <- function(x, y, R = 99, dst = FALSE, weight = FALSE,
     }
   } else {
     set.seed(seed = examine_seed_arguments(seed))
-    result <- bcov_test_wrap_c(x = x, y = y, n = num, R = R, weight = weight, dst =  dst, type = type)
+    result <- bcov_test_wrap_c(x = x, y = y, n = num, R = R, weight = weight, dst =  dst, type = type, num.threads = num.threads)
     pvalue <- calculatePvalue(result[["statistic"]], result[["permuted_stat"]])
   }
   list(statistic = result[["statistic"]],
@@ -293,7 +296,7 @@ kbcov_stat <- function(x, num, var_num, weight, type) {
 #' @noRd
 #'
 bcov_test_internal_wrap <- function(x = x, y = y, R, dst, seed, 
-                                    weight, method, type)
+                                    weight, method, type, num.threads)
 {
   if(class(x) == "list") {
     result <- kbcov_test_internal(x = x, R = R, dst = dst, weight = weight, 
@@ -302,7 +305,7 @@ bcov_test_internal_wrap <- function(x = x, y = y, R, dst, seed,
   } else {
     result <- bcov_test_internal(x = x, y = y, R = R, dst = dst, 
                                  weight = weight, seed = seed, method = method, 
-                                 type = type)
+                                 type = type, num.threads = num.threads)
   }
   result
 }
@@ -387,9 +390,9 @@ bcov_test_internal_wrap <- function(x = x, y = y, R, dst, seed,
 #' x <- rnorm(n)
 #' y <- rnorm(n)
 #' bcov(x, y)
-bcov <- function(x, y, dst = FALSE, weight = FALSE) {
+bcov <- function(x, y, dst = FALSE, weight = FALSE, num.threads =  2) {
   res <- bcov_test_internal_wrap(x = x, y = y, R = 0, dst = dst, seed = 0,
-                                 weight = weight, method = "permute", type = "bcov")
+                                 weight = weight, method = "permute", type = "bcov", num.threads = num.threads)
   res
 }
 
@@ -405,8 +408,8 @@ bcov <- function(x, y, dst = FALSE, weight = FALSE) {
 #' x <- rnorm(n)
 #' y <- rnorm(n)
 #' bcor(x, y)
-bcor <- function(x, y, dst = FALSE, weight = FALSE) {
+bcor <- function(x, y, dst = FALSE, weight = FALSE, num.threads =  2) {
   res <- bcov_test_internal_wrap(x = x, y = y, R = 0, dst = dst, seed = 0,
-                                 weight = weight, method = "permute", type = "bcor")
+                                 weight = weight, method = "permute", type = "bcor", num.threads = num.threads)
   res
 }

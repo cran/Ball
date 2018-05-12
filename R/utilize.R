@@ -120,6 +120,17 @@ examine_R_arguments <- function(R) {
 }
 
 
+#' Examine num.threads arguments in bcov.test, bd.test
+#' @param R A integer number
+#' @noRd
+#' 
+examine_threads_arguments <- function(num.threads) {
+  if(is.null(num.threads) | (num.threads < 1)) {
+    stop("num.threads arguments is invaild!")
+  }
+}
+
+
 #' Examine type arguments in bcov.test, bd.test
 #' @param type "bcor" or "bcov"
 #' @noRd
@@ -192,8 +203,8 @@ get_matrixed_x <- function(x, y) {
 #' @return size of candidate set
 #' @noRd
 #'
-examine_candiate_size <- function(n, candidate) {
-  if(candidate > n) {
+examine_candiate_size <- function(n, candidate, p) {
+  if(p > n) {
     if(is.numeric(candidate)) {
       if(candidate <= 0) {
         stop("candidate argument is invaild!")
@@ -209,7 +220,7 @@ examine_candiate_size <- function(n, candidate) {
       }
     }
   } else {
-    final_d <- n
+    final_d <- p
     message("the number of covariate not larger than sample sizes, and SIS procedure is not essential")
   }
   final_d

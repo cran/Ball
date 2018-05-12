@@ -14,11 +14,82 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "math.h"
-#include "R.h"
-#include "Rmath.h"
-#include "Rinternals.h"
 #include "utilities.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "utilize_R.h"
 
+
+ /*
+ The rank computation (initRank, computeRank) is refer to: http://www.jmlr.org/papers/volume17/14-441/14-441.pdf [section 3.1.2]
+ */
+void computeRank(int n, int **Rank)
+{
+	int i, j;
+	for (i = 1; i < n; i++)
+		for (j = 1; j < n; j++)
+			Rank[i][j] += (Rank[i][j - 1] + Rank[i - 1][j] - Rank[i - 1][j - 1]);
+}
+
+void initRank(int n, int **Rank, int *xrank, int *yrank, int *i_perm)
+{
+	int i, j;
+	for (i = 0; i < n + 1; i++)
+		for (j = 0; j < n + 1; j++)
+			Rank[i][j] = 0;
+	for (i = 0; i < n; i++)
+		Rank[xrank[i] + 1][yrank[i_perm[i]] + 1] += 1;
+	computeRank(n + 1, Rank);
+}
+
+
+//void initRank_surv(int n, int **Rank, int *xrank, int *yrank, int *i_perm)
+//{
+//	int i, j, old_x_rank = -1, old_t_rank = -1;
+//	for (i = 0; i < n + 1; i++)
+//		for (j = 0; j < n + 1; j++)
+//			Rank[i][j] = 0;
+//	//
+//	for (i = 0; i < n; i++)
+//	{
+//		if (old_x_rank != (xrank[i] + 1) & old_t_rank != (yrank[i_perm[i]] + 1))
+//		{
+//			Rank[xrank[i] + 1][yrank[i_perm[i]] + 1] += 1;
+//			old_x_rank = xrank[i] + 1;
+//			old_t_rank = yrank[i_perm[i]] + 1;
+//		}
+//		else {
+//			Rank[old_x_rank][old_t_rank] += 1;
+//		}
+//	}
+//	printf("\n");
+//	for (i = n - 1; i >= 0; i--)
+//	{
+//		for (int j = 0; j < (n); j++)
+//			printf("%d ", Rank[i][j]);
+//		printf("\n");
+//	}
+//	printf("\n");
+//	computeRank(n + 1, Rank);
+//}
+
+
+/*
+Input: n=6, zrank = []; z = [1, 2, 3, 4, 5, 5], zidx = [3, 1, 5, 2, 6, 4];
+Output: zrank = [2, 4, 1, 5, 3, 5];
+*/
+void ranksort(int *n, int *zrank, double *z, int *zidx)
+{
+	int i, lastpos = 0;
+	double lastval = -1.0;
+
+	for (i = *n - 1; i >= 0; i--) {
+		if (lastval != z[i])
+			lastpos = i;
+		lastval = z[i];
+		zrank[zidx[i]] = lastpos;
+	}
+}
 
 void quicksort(double *a, int *idx, int l, int u)
 {
@@ -199,6 +270,64 @@ void distance(double *x, double *Dx, int *n, int *d)
 }
 
 
+void resample(int *i_perm, int *i_perm_inv, int *n)
+{
+  int i, j, temp;
+  for (i = *n - 1; i > 0; --i) {
+    j = random_index2(i);
+    temp = i_perm[j];
+    i_perm[j] = i_perm[i];
+    i_perm[i] = temp;
+  }
+  for (i = 0; i < *n; ++i) {
+    i_perm_inv[i_perm[i]] = i;
+  }
+}
+
+
+void resample2(int *i_perm, int *n)
+{
+  int i, j, temp;
+  for (i = *n - 1; i > 0; --i) {
+    // j = rand() % (i + 1);
+    j = random_index2(i);
+    temp = i_perm[j];
+    i_perm[j] = i_perm[i];
+    i_perm[i] = temp;
+  }
+}
+
+
+/*
+ * permute group index: i_perm
+ */
+void resample3(int *i_perm, int *i_perm_tmp, int n, int *n1)
+{
+	int i, j, temp, tmp0, tmp1;
+  
+	// permute step:
+	for (i = n - 1; i > 0; --i) {
+		// j = rand() % (i + 1);
+		j = random_index2(i);
+		temp = i_perm[j];
+		i_perm[j] = i_perm[i];
+		i_perm[i] = temp;
+	}
+  
+	tmp0 = 0;
+	tmp1 = 0;
+	for (i = 0; i < n; i++) {
+		if (i_perm[i] == 1) {
+			i_perm_tmp[tmp0++] = i;
+		}
+		else {
+			i_perm_tmp[*n1 + tmp1] = i;
+			tmp1++;
+		}
+	}
+}
+
+
 /* Arrange the N elements of ARRAY in random order.
  Only effective if N is much smaller than RAND_MAX;
  if this may not be the case, use a better random
@@ -209,12 +338,11 @@ void shuffle(int *array, int *N)
   int n = *N;
   if (n > 1) 
   {
-    int i;
+    int i, j, t;
     for (i = 0; i < n - 1; i++) 
     {
-      // int j = i + rand() / (RAND_MAX / (n - i) + 1);
-      int j = i + r_available_rand() / (RAND_MAX / (n - i) + 1);
-      int t = array[j];
+      j = random_index(n, i);
+      t = array[j];
       array[j] = array[i];
       array[i] = t;
     }
@@ -228,12 +356,12 @@ void shuffle_value(double *array, int *N)
   int n = *N;
   if (n > 1) 
   {
-    int i;
+    int i, j;
+    double tmp;
     for (i = 0; i < n - 1; i++) 
     {
-      // int j = i + rand() / (RAND_MAX / (n - i) + 1);
-      int j = i + r_available_rand() / (RAND_MAX / (n - i) + 1);
-      double tmp = array[j];
+      j = random_index(n, i);
+      tmp = array[j];
       array[j] = array[i];
       array[i] = tmp;
     }
@@ -241,29 +369,15 @@ void shuffle_value(double *array, int *N)
 }
 
 
-/* check_interrupt_fn and pending_interrupt 
- * are used to check for interrupt without long jumping 
- */
-void check_interrupt_fn(void *dummy) {
-  R_CheckUserInterrupt();
-}
-
-
 int pending_interrupt() {
-  return !(R_ToplevelExec(check_interrupt_fn, NULL));
+  int interrupt_status = 0;
+  interrupt_status = pending_interrupt_status();
+  return interrupt_status;
 }
 
 
-/*
- * A random integer generator available for R-package building.
- * Following the rule in "Writing R Extension"[https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Random-numbers]!
- * output:
- * A random integer
- */
-int r_available_rand()
+void print_stop_message()
 {
-  GetRNGstate();
-  int random_value = round(RAND_MAX*unif_rand());
-  PutRNGstate();
-  return random_value;
+  print_stop_message_internal();
+  return;
 }

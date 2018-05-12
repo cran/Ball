@@ -17,6 +17,8 @@
 #define UTILITIES_H_
 
 
+void computeRank(int n, int **Rank);
+void initRank(int n, int **Rank, int *xrank, int *yrank, int *i_perm);
 void quicksort(double *a, int *idx, int l, int u);
 void quicksort2(double *a, double *b, int *idx, int l, int u);
 double **alloc_matrix(int r, int c);
@@ -28,9 +30,12 @@ void Euclidean_distance(double *x, double **Dx, int n, int d);
 void distance(double *x, double *Dx, int *n, int *d);
 void shuffle(int *array, int *N);
 void shuffle_value(double *array, int *N);
-void check_interrupt_fn(void *dummy);
 int pending_interrupt();
-int r_available_rand();
+void print_stop_message();
+void resample(int *i_perm, int *i_perm_inv, int *n);
+void resample2(int *i_perm, int *n);
+void resample3(int *i_perm, int *i_perm_tmp, int n, int *n1);
+void ranksort(int *n, int *zrank, double *z, int *zidx);
 
 
 #endif /* UTILITIES_H_ */
