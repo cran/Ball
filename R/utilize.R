@@ -87,6 +87,53 @@ examine_seed_arguments <- function(seed) {
 }
 
 
+#' Examine weight arguments in bcov.test, bd.test
+#' @param weight A bool or character value
+#' @param fun "bd.test" or "bcov.test"
+#' @return A integer number
+#' @noRd
+#'
+examine_weight_arguments <- function(weight) {
+  WEIGHT_METHODS <- c(TRUE, FALSE, "none", "chisq", "prob")
+  method <- pmatch(weight, WEIGHT_METHODS)
+  if (is.na(method)) 
+    stop("invalid weight method")
+  if (weight == TRUE) {
+    weight <- "prob"
+  } else if (weight == FALSE) {
+    weight <- "none"
+  }
+  return(weight)
+}
+
+
+select_ball_stat <- function(ball_stat, weight, type = "bcov", fun_name = "bcov") {
+  if (fun_name == "bcorsis") 
+  {
+    if (weight == "none") {
+      ball_stat <- ball_stat[, 1]
+    } else if (weight == "bcov") {
+      ball_stat <- ball_stat[, 2]
+    } else {
+      ball_stat <- ball_stat[, 3]
+    }
+  } else {
+    if (weight == "none")
+    {
+      ball_stat <- ball_stat[1]
+      names(ball_stat) <- ifelse(type == "bcov", "bcov", "bcor")
+    } else if (weight == "prob") {
+      ball_stat <- ball_stat[2]
+      names(ball_stat) <- ifelse(type == "bcov", "bcov.prob", "bcor.prob")
+    } else {
+      ball_stat <- ball_stat[3]
+      names(ball_stat) <- ifelse(type == "bcov", "bcov.chisq", "bcor.chisq")
+    }
+  }
+  return(ball_stat)
+}
+
+
 #' Examine size arguments in bcov.test, bd.test
 #' @param size A integer vector
 #' @noRd
@@ -98,13 +145,13 @@ examine_size_arguments <- function(x, size) {
   }
   size <- as.integer(size)
   if(any(is.na(size)) | any(size <= 0) | (length(size)==1)) {
-    stop("size arguments is invaild!")
+    stop("size arguments is invalid!")
   }
   # examine the consistency between x and size:
   x_row <- nrow(x)
   n <- sum(size)
   if(x_row != n) {
-    stop("size arguments is invaild!")
+    stop("size arguments is invalid!")
   }
 }
 
@@ -115,7 +162,7 @@ examine_size_arguments <- function(x, size) {
 #' 
 examine_R_arguments <- function(R) {
   if(is.null(R) | (R < 0)) {
-    stop("R arguments is invaild!")
+    stop("R arguments is invalid!")
   }
 }
 
@@ -126,7 +173,7 @@ examine_R_arguments <- function(R) {
 #' 
 examine_threads_arguments <- function(num.threads) {
   if(is.null(num.threads) | (num.threads < 1)) {
-    stop("num.threads arguments is invaild!")
+    stop("num.threads arguments is invalid!")
   }
 }
 
@@ -207,7 +254,7 @@ examine_candiate_size <- function(n, candidate, p) {
   if(p > n) {
     if(is.numeric(candidate)) {
       if(candidate <= 0) {
-        stop("candidate argument is invaild!")
+        stop("candidate argument is invalid!")
       }
       final_d <- as.integer(candidate)
     } else {
@@ -216,7 +263,7 @@ examine_candiate_size <- function(n, candidate, p) {
       } else if(candidate == "large") {
         final_d <- n - 1
       } else {
-        stop("candidate argument is invaild!")
+        stop("candidate argument is invalid!")
       }
     }
   } else {
@@ -253,7 +300,7 @@ preprocess_bcorsis_y <- function(y, y_p) {
 examine_method_arguments <- function(method) {
   method <- head(unlist(strsplit(method, "-")), n = 1)
   if(!(method %in% c("standard", "pvalue", "interaction", "survival", "gam", "lm"))) {
-    stop("method argument is invaild!")
+    stop("method argument is invalid!")
   }
   method
 }

@@ -26,10 +26,10 @@ or ball correlation. Default: \code{weight = FALSE}}
 \value{
 bcov.test returns a list with class "htest" containing the following components:
 \item{\code{statistic}}{ball covariance or ball correlation statistic.}            
-\item{\code{permuted_stat}}{permuted ball covariance or ball correlation statistic.} 
 \item{\code{p.value}}{the p-value for the test.}  
 \item{\code{replicates}}{replicates of the test statistic.}
 \item{\code{size}}{sample size.} 
+\item{\code{complete.info}}{a \code{list} containing multiple statistics value and their corresponding $p$ value.}
 \item{\code{alternative}}{a character string describing the alternative hypothesis.}
 \item{\code{method}}{a character string indicating what type of test was performed.}
 \item{\code{data.name}}{description of data.}
@@ -92,7 +92,6 @@ Dx <- dist(ArcticLake[["depth"]])
 bcov.test(x = Dx, y = Dy, dst = TRUE, weight = TRUE)
 
 ################# Mutual Independence Test #################
-\dontrun{
 x <- rnorm(30)
 y <- (x > 0) * x + rnorm(30)
 z <- (x <= 0) * x + rnorm(30)
@@ -102,7 +101,6 @@ bcov.test(data_list)
 ################# Mutual Independence Test for Meteorology data #################
 data("meteorology")
 bcov.test(meteorology)
-}
 
 }
 \seealso{

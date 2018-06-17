@@ -5,7 +5,7 @@
 \title{Ball Correlation Sure Independence Screening}
 \usage{
 bcorsis(x, y, d = "small", weight = FALSE, method = "standard",
-  dst = FALSE, parms = list(d1 = 5, d2 = 5, df = 3), R = 99, seed = 4)
+  dst = FALSE, parms = list(d1 = 5, d2 = 5, df = 3), num.threads = 2)
 }
 \arguments{
 \item{x}{a numeric matirx or data.frame included \eqn{n} rows and \eqn{p} columns. 
@@ -20,18 +20,17 @@ variables are selected. If \code{d} is a integer,
 
 \item{weight}{when \code{weight = TRUE}, weighted ball correlation is used instead of ball correlation. Default: \code{ weight = FALSE}}
 
-\item{method}{method for sure independence screening procedure, include: \code{"standard"}, \code{"pvalue"},
+\item{method}{method for sure independence screening procedure, include: \code{"standard"},
 \code{"lm"}, \code{"gam"}, \code{"interaction"} and \code{"survival"}.
-Setting \code{method = "standard"} or \code{"pvalue"} means standard sure independence screening procedure 
-based on ball correlation or \emph{p}-value of ball correlation test while options
+Setting \code{method = "standard"} means standard sure independence screening procedure 
+based on ball correlation while options
 \code{"lm"} and \code{"gam"} carry out iterative BCor-SIS procedure with ordinary 
 linear regression and generalized additive models, respectively.
 Options \code{"interaction"} and \code{"survival"} are designed for detecting variables 
 with potential linear interaction or associated with censored responses. Default: \code{method = "standard"}}
 
 \item{dst}{if \code{dst = TRUE}, \code{y} will be considered as a distance matrix. 
-Arguments only available when \code{ method = "standard"}, \code{method = "pvalue"} 
-or \code{ method = "interaction"}. Default: \code{dst = FALSE}}
+Arguments only available when \code{ method = "standard"} and \code{ method = "interaction"}. Default: \code{dst = FALSE}}
 
 \item{parms}{parameters list only available when \code{method = "lm"} or \code{"gam"}. 
 It contains three parameters: \code{d1}, \code{d2}, and \code{df}. \code{d1} is the
@@ -39,12 +38,13 @@ number of initially selected variables, \code{d2} is the number of variables col
 \code{df} is degree freedom of basis in generalized additive models 
 playing a role only when \code{method = "gam"}. Default: \code{ parms = list(d1 = 5, d2 = 5, df = 3)}}
 
-\item{R}{the number of replications. Arguments only available when \code{method = "pvalue"}. Default \code{ R = 99}}
-
-\item{seed}{the random seed. Arguments only available when \code{method = "pvalue"}.}
+\item{num.threads}{Number of threads. Default \code{num.threads = 2}.}
 }
 \value{
-\item{\code{ix }}{ the vector of indices selected by ball correlation sure independence screening procedure.}
+\item{\code{ix }}{ the vector of indices selected by ball correlation sure independence screening procedure.} 
+\item{\code{method }}{ the method used.} 
+\item{\code{weight }}{ the weight used.} 
+\item{\code{complete.info }}{ a \code{list} containing at least one \eqn{p x 3} matrix, where each row is corresponding to variable and each column is corresponding to differe ball correlation weight. If \code{method = "gam"} or \code{method = "lm"}, \code{complete.info} is empty list.}
 }
 \description{
 Generic non-parametric sure independence screening procedure based on ball correlation.
@@ -80,8 +80,6 @@ almost surely able to retain the efficient variables.
 (iii) It works well for complex responses and/or predictors, such as shape or survival data
 
 (iv) It can extract important features even when the underlying model is complicated.
-
-See (Pan 2017) for theoretical properties of the BCor-SIS, including statistical consistency.
 }
 \examples{
 \dontrun{
@@ -94,13 +92,14 @@ x <- matrix(rnorm(n * p), nrow = n)
 error <- rnorm(n)
 y <- 3*x[, 1] + 5*(x[, 3])^2 + error
 res <- bcorsis(y = y, x = x)
-head(res[[1]])
+head(res[["ix"]])
 
 ############### BCor-SIS: Censored Data Example ###############
 data("genlung")
 result <- bcorsis(x = genlung[["covariate"]], y = genlung[["survival"]], 
-                  method = "survival")$ix
-top_gene <- colnames(genlung[["covariate"]])[result]
+                  method = "survival")
+index <- result[["ix"]]
+top_gene <- colnames(genlung[["covariate"]])[index]
 head(top_gene, n = 1)
 
 
@@ -112,7 +111,7 @@ x <- matrix(rnorm(n * p), nrow = n)
 error <- rnorm(n)
 y <- 3*x[, 1]*x[, 5]*x[, 10] + error
 res <- bcorsis(y = y, x = x, method = "interaction")
-head(res[[1]])
+head(res[["ix"]])
 
 ############### BCor-SIS: Iterative Method ###############
 library(mvtnorm)
@@ -125,9 +124,26 @@ x <- rmvnorm(n = n, sigma = sigma_mat)
 error <- rnorm(n)
 rm(sigma_mat); gc(reset = TRUE)
 y <- 3*(x[, 1])^2 + 5*(x[, 2])^2 + 5*x[, 8] - 8*x[, 16] + error
+res <- bcorsis(y = y, x = x, method = "lm", d = 15)
 res <- bcorsis(y = y, x = x, method = "gam", d = 15)
-res[[1]]
+res[["ix"]]
+
+############### Weighted BCor-SIS: Probability weight ###############
+set.seed(1)
+n <- 150
+p <- 3000
+x <- matrix(rnorm(n * p), nrow = n)
+error <- rnorm(n)
+y <- 3*x[, 1] + 5*(x[, 3])^2 + error
+res <- bcorsis(y = y, x = x, weight = "prob")
+head(res[["ix"]])
+# Alternative, chisq weight:
+res <- bcorsis(y = y, x = x, weight = "chisq")
+head(res[["ix"]])
 }
+}
+\references{
+Wenliang Pan, Xueqin Wang, Weinan Xiao & Hongtu Zhu (2018) A Generic Sure Independence Screening Procedure, Journal of the American Statistical Association, DOI: 10.1080/01621459.2018.1462709
 }
 \seealso{
 \code{\link{bcor}}
