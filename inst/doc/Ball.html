@@ -145,7 +145,7 @@ y &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">5
 <p>We use <strong>bd.test</strong> to perform the two-sample test to determine whether two samples come from the same distribution.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">bd.test</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y)</code></pre></div>
 <pre><code># 
-#   Nonparametric 2-Samples Ball Divergence Test
+#   Nonparametric 2-sample Ball Divergence Test
 # 
 # data:  x and y 
 # number of observations = 100, group sizes: 50 50
@@ -163,7 +163,7 @@ y &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">
 <p>We use <strong>bd.test</strong> to test whether two multivariate random samples are identically distributed.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">bd.test</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y)</code></pre></div>
 <pre><code># 
-#   Nonparametric 2-Samples Ball Divergence Test
+#   Nonparametric 2-sample Ball Divergence Test
 # 
 # data:  x and y 
 # number of observations = 100, group sizes: 50 50
@@ -211,7 +211,7 @@ y &lt;-<span class="st"> </span>(<span class="kw">sin</span>((x[,<span class="dv
 # data:  x and y
 # number of observations = 50
 # replicates = 99, weight: Constant
-# bcov = 0.0014671, p-value = 0.01
+# bcov = 0.0014671, p-value = 0.03
 # alternative hypothesis: random variables are dependent</code></pre>
 <p>The result of <strong>bcov.test</strong> is that <em>p</em>-value &lt; 0.05, so we conclude that multivariate random variable <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are associated.</p>
 <hr />
@@ -288,7 +288,7 @@ Dmat &lt;-<span class="st"> </span><span class="kw">nhdist</span>(bdvmf[[<span c
 <span class="co"># Two-Sample Test based on BD :</span>
 <span class="kw">bd.test</span>(<span class="dt">x =</span> Dmat, <span class="dt">size =</span> <span class="kw">c</span>(<span class="dv">150</span>, <span class="dv">150</span>), <span class="dt">R =</span> <span class="dv">99</span>, <span class="dt">dst =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <pre><code># 
-#   Nonparametric 2-Samples Ball Divergence Test
+#   Nonparametric 2-sample Ball Divergence Test
 # 
 # data:  Dmat 
 # number of observations = 300, group sizes: 150 150
@@ -309,7 +309,7 @@ Dmat &lt;-<span class="st"> </span><span class="kw">nhdist</span>(macaques[[<spa
 <span class="co"># hypothesis test with BD:</span>
 <span class="kw">bd.test</span>(<span class="dt">x =</span> Dmat, <span class="dt">R =</span> <span class="dv">99</span>, <span class="dt">size =</span> <span class="kw">c</span>(<span class="dv">9</span>, <span class="dv">9</span>), <span class="dt">dst =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <pre><code># 
-#   Nonparametric 2-Samples Ball Divergence Test
+#   Nonparametric 2-sample Ball Divergence Test
 # 
 # data:  Dmat 
 # number of observations = 18, group sizes: 9 9
@@ -348,7 +348,7 @@ The result shows that <em>p</em>-value &lt; 0.05, so we conclude that the compos
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n &lt;-<span class="st"> </span><span class="dv">150</span>
 <span class="kw">bd.test</span>(<span class="kw">rnorm</span>(n), <span class="dt">size =</span> <span class="kw">rep</span>(<span class="dv">50</span>, <span class="dv">3</span>))</code></pre></div>
 <pre><code># 
-#   Nonparametric 3-Samples Ball Divergence Test (Summation Version)
+#   Nonparametric 3-sample Ball Divergence Test (Summation Version)
 # 
 # data:  rnorm(n) 
 # number of observations = 150, group sizes: 50 50 50
