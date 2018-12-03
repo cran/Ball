@@ -211,7 +211,7 @@ y &lt;-<span class="st"> </span>(<span class="kw">sin</span>((x[,<span class="dv
 # data:  x and y
 # number of observations = 50
 # replicates = 99, weight: Constant
-# bcov = 0.0014671, p-value = 0.03
+# bcov = 0.0014671, p-value = 0.0202
 # alternative hypothesis: random variables are dependent</code></pre>
 <p>The result of <strong>bcov.test</strong> is that <em>p</em>-value &lt; 0.05, so we conclude that multivariate random variable <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are associated.</p>
 <!-- *** -->
@@ -316,7 +316,7 @@ Dmat &lt;-<span class="st"> </span><span class="kw">nhdist</span>(macaques[[<spa
 # data:  Dmat 
 # number of observations = 18, group sizes: 9 9
 # replicates = 99
-# bd = 0.1922, p-value = 0.03
+# bd = 0.1922, p-value = 0.0202
 # alternative hypothesis: distributions of samples are distinct</code></pre>
 <p><em>p</em>-value is under 0.05, which means the skull shape differs between male macaques and female macaques.</p>
 </div>
@@ -355,7 +355,7 @@ The result shows that <em>p</em>-value &lt; 0.05, so we conclude that the compos
 # data:  rnorm(n) 
 # number of observations = 150, group sizes: 50 50 50
 # replicates = 99
-# kbd.sum = 0.062061, p-value = 0.16
+# kbd.sum = 0.062061, p-value = 0.1515
 # alternative hypothesis: distributions of samples are distinct</code></pre>
 <p>As the result shown, <em>p</em>-value&gt;0.05, which means we can’t reject the null hypothesis.<br />
 We can also utilize <strong>bd.test</strong> to deal with <span class="math inline">\(K\)</span>-Sample problem in non-Hilbert space following the aforementioned procedure. At the same time, remember to assign size vector to parameter <em>size</em> arguments and set <em>dst = TRUE</em>.</p>
