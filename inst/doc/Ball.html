@@ -295,7 +295,7 @@ Dmat &lt;-<span class="st"> </span><span class="kw">nhdist</span>(bdvmf[[<span c
 # data:  Dmat 
 # number of observations = 300, group sizes: 150 150
 # replicates = 99
-# bd = 0.14483, p-value = 0.01
+# bd = 0.15284, p-value = 0.01
 # alternative hypothesis: distributions of samples are distinct</code></pre>
 <p>In this example, we firstly calculate the geodesic distance matrix using <strong>nhdist</strong> function in <em>Ball</em> package. Then, pass <em>Dmat</em> to arguments <em>x</em> and set <em>dst = TRUE</em> to indicate that the <em>x</em> parameter is a distance matrix. Meanwhile, we set the size of each sample <em>size = c(150, 150)</em> and set the replication times <em>R = 99</em>. The result is that <em>p</em>-value &lt; 0.05, which means that red dots and black dots are not identically distributed.</p>
 </div>
@@ -316,7 +316,7 @@ Dmat &lt;-<span class="st"> </span><span class="kw">nhdist</span>(macaques[[<spa
 # data:  Dmat 
 # number of observations = 18, group sizes: 9 9
 # replicates = 99
-# bd = 0.1922, p-value = 0.0202
+# bd = 0.21353, p-value = 0.0202
 # alternative hypothesis: distributions of samples are distinct</code></pre>
 <p><em>p</em>-value is under 0.05, which means the skull shape differs between male macaques and female macaques.</p>
 </div>
@@ -337,7 +337,7 @@ Dx &lt;-<span class="st"> </span><span class="kw">dist</span>(ArcticLake[[<span 
 # data:  Dx and Dy
 # number of observations = 39
 # replicates = 99, weight: Constant
-# bcov = 0.0083848, p-value = 0.01
+# bcov = 0.0085398, p-value = 0.01
 # alternative hypothesis: random variables are dependent</code></pre>
 <p>We first calculate the distance matrix <em>Dy</em> and <em>Dx</em>. Then, we pass <em>Dx</em> to arguments <em>x</em>, <em>Dy</em> to arguments <em>y</em>, and set the replication times <em>R = 99</em>, <em>dst = TRUE</em> to indicate that the <em>x</em> and <em>y</em> parameters are distance matrixs.<br />
 The result shows that <em>p</em>-value &lt; 0.05, so we conclude that the compositions of sediment is associated with the water depth.</p>
@@ -382,7 +382,7 @@ Dx &lt;-<span class="st"> </span><span class="kw">dist</span>(ArcticLake[[<span 
 # data:  Dx and Dy
 # number of observations = 39
 # replicates = 99, weight: Probability
-# bcov.prob = 0.088597, p-value = 0.01
+# bcov.prob = 0.090901, p-value = 0.01
 # alternative hypothesis: random variables are dependent</code></pre>
 </div>
 <div id="ball-covariance-mutual-independence-test" class="section level2">
