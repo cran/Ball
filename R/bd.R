@@ -14,16 +14,19 @@
 #' @param distance if \code{distance = TRUE}, the elements of \code{x} will be considered as a distance matrix. Default: \code{distance = FALSE}.
 #' @param size a vector recording sample size of each group.
 #' @param seed the random seed. Default \code{seed = 1}.
-#' @param num.threads Number of threads. If \code{num.threads = 0}, then all of available cores will be used. Default \code{num.threads = 0}.
+#' @param num.threads number of threads. If \code{num.threads = 0}, then all of available cores will be used. Default \code{num.threads = 0}.
 #' @param kbd.type a character string specifying the \eqn{K}-sample Ball Divergence test statistic, 
 #' must be one of \code{"sum"}, \code{"summax"}, or \code{"max"}. Any unambiguous substring can be given. 
 #' Default \code{kbd.type = "sum"}.
+#' @param method if \code{method = "permutation"}, a permutation procedure is carried out to compute the \eqn{p}-value;
+#' if \code{ method = "limit"}, an approximate null distribution is used when \code{weight = "constant"}.
+#' Any unambiguous substring can be given. Default \code{method = "permutation"}.
+#' @param weight a character string specifying the weight form of Ball Divergence statistic.
+#' It must be one of \code{"constant"} or \code{"variance"}. 
+#' Any unambiguous substring can be given. Default: \code{weight = "constant"}.
 #' @param ... further arguments to be passed to or from methods.
 #' 
 ## @param weight not available now
-## @param method if \code{method = 'permute'}, a permutation procedure will be carried out;
-## if \code{ method = 'approx'}, the p-values based on approximate Ball Divergence
-## distribution are given.
 #' 
 #' @return If \code{num.permutations > 0}, \code{bd.test} returns a \code{htest} class object containing the following components:
 #' \item{\code{statistic}}{Ball Divergence statistic.}            
@@ -31,7 +34,7 @@
 #' \item{\code{replicates}}{permutation replications of the test statistic.}
 #' \item{\code{size}}{sample sizes.}
 #' \item{\code{complete.info}}{a \code{list} mainly containing two vectors, the first vector is the Ball Divergence statistics 
-#' with different aggregation strategy, the second vector is the \eqn{p}-values of tests.}
+#' with different aggregation strategy and weight, the second vector is the \eqn{p}-values of tests.}
 #' \item{\code{alternative}}{a character string describing the alternative hypothesis.}
 #' \item{\code{method}}{a character string indicating what type of test was performed.}
 #' \item{\code{data.name}}{description of data.}
@@ -74,6 +77,7 @@
 #' @export
 #' @examples
 #' ################# Quick Start #################
+#' set.seed(1)
 #' x <- rnorm(50)
 #' y <- rnorm(50, mean = 1)
 #' # plot(density(x))
@@ -119,19 +123,31 @@
 #' res[["complete.info"]][["statistic"]]
 #' ## get all test result:
 #' res[["complete.info"]][["p.value"]]
+#' 
+#' ################  Testing via approximate limit distribution  #################
+#' \dontrun{
+#' set.seed(1)
+#' n <- 1000
+#' x <- rnorm(n)
+#' y <- rnorm(n)
+#' res <- bd.test(x, y, method = "limit")
+#' bd.test(x, y)
+#' }
 bd.test <- function(x, ...) UseMethod("bd.test")
 
 
 #' @rdname bd.test
 #' @export
 #' @method bd.test default
-bd.test.default <- function(x, y = NULL, num.permutations = 99, distance = FALSE,
+bd.test.default <- function(x, y = NULL, num.permutations = 99, 
+                            method = c("permutation", "limit"), distance = FALSE,
                             size = NULL, seed = 1, num.threads = 0, 
-                            kbd.type = c("sum", "maxsum", "max"), ...) {
-  weight <- FALSE
-  method <- 'permute'
+                            kbd.type = c("sum", "maxsum", "max"), 
+                            weight = c("constant", "variance"), ...) {
+  weight <- match.arg(weight)
   data_name <- paste(deparse(substitute(x)), "and", deparse(substitute(y)))
   kbd.type <- match.arg(kbd.type)
+  method <- match.arg(method)
   if (length(data_name) > 1) {
     data_name <- ""
   }
@@ -144,13 +160,13 @@ bd.test.default <- function(x, y = NULL, num.permutations = 99, distance = FALSE
     # modify input information:
     data_name <- gsub(x = data_name, pattern = " and NULL", replacement = "")
     
-    if (class(x) == "dist") {
+    if (class(x)[1] == "dist") {
       distance <- TRUE
     }
     if(distance) {
       examine_size_arguments(size)
       if (length(size) >= 2) {
-        if (class(x) == "dist") {
+        if (class(x)[1] == "dist") {
           if (attr(x, "Size") != sum(size)) { stop("size arguments is error!") }
           xy <- as.vector(x)
         } else {
@@ -192,7 +208,7 @@ bd.test.default <- function(x, y = NULL, num.permutations = 99, distance = FALSE
     y <- as.matrix(y)
     p <- examine_dimension(x, y)
     # 
-    if(p > 1) {
+    if(p > 1 || method == "limit") {
       xy <- get_vectorized_distance_matrix(x, y)
       distance <- TRUE
       size <- c(xy[[2]], xy[[3]])
@@ -208,7 +224,7 @@ bd.test.default <- function(x, y = NULL, num.permutations = 99, distance = FALSE
   # memoryAvailable(n = sum(size), funs = 'BD.test')
   
   ## examine num.permutations arguments:
-  if(method == "approx") {
+  if(method == "limit") {
     num.permutations <- 0
   } else {
     examine_R_arguments(num.permutations)
@@ -221,10 +237,10 @@ bd.test.default <- function(x, y = NULL, num.permutations = 99, distance = FALSE
   if(num.permutations == 0) {
     result <- bd_test_wrap_c(xy, size, num.permutations = 0, weight, distance, num.threads)
     # approximately method:
-    if(method == "approx") {
+    if(method == "limit") {
       if(result[["info"]][["K"]] == 2) {
-        pvalue <- calculatePvalue(prod(size) * result[["statistic"]] / sum(size), 
-                                  BDTestNullDistribution)
+        eigenvalue <- bd_limit_wrap_c(xy, size, distance, num.threads)
+        result[["p.value"]] <- 1 - hbe(eigenvalue, prod(size) * result[["statistic"]] / sum(size))
       } else {
         return(result[["statistic"]])
       }
@@ -232,11 +248,7 @@ bd.test.default <- function(x, y = NULL, num.permutations = 99, distance = FALSE
     # return statistic when num.permutations = 0:
     else {
       if (result[["info"]][["K"]] == 2) {
-        if (weight) {
-          return_stat <- result[["statistic"]][2]
-        } else {
-          return_stat <- result[["statistic"]][1] 
-        }
+        return_stat <- result[["statistic"]][1] 
       } else {
         if (kbd.type == "sum") {
           return_stat <- result[["statistic"]][1]
@@ -275,7 +287,14 @@ bd.test.default <- function(x, y = NULL, num.permutations = 99, distance = FALSE
   }
   data_name <- paste(data_name, sprintf("\nnumber of observations = %s,", result[["info"]][["N"]]))
   data_name <- paste(data_name, "group sizes:", paste0(result[["info"]][["size"]], collapse = " "))
-  data_name <- paste0(data_name, "\nreplicates = ", num.permutations)
+  if (method == "limit") {
+    null_method <- "Limit Distribution"
+    data_name <- paste0(data_name, "\nreplicates = ", 0)
+  } else {
+    null_method <- "Permutation"
+    data_name <- paste0(data_name, "\nreplicates = ", num.permutations)
+  }
+  data_name <- paste0(data_name, ", weight: ", weight)
   if (result[["info"]][["K"]] == 3) {
     data_name <- paste0(data_name, ", kbd.type: ", stat_message)
   }
@@ -288,9 +307,9 @@ bd.test.default <- function(x, y = NULL, num.permutations = 99, distance = FALSE
     p.value = pvalue,
     replicates = num.permutations,
     size = result[["info"]][["size"]],
-    complete.info = result,
+    complete.info = result[["info"]],
     alternative = alternative_message,
-    method = sprintf("%s-sample Ball Divergence Test", result[["info"]][["K"]]),
+    method = sprintf("%s-sample Ball Divergence Test (%s)", result[["info"]][["K"]], null_method),
     data.name = data_name
   )
   class(e) <- "htest"
@@ -409,4 +428,3 @@ bd <- function(x, y = NULL, distance = FALSE, size = NULL, num.threads = 1, kbd.
   res <- bd.test(x = x, y = y, distance = distance, size = size, num.permutations = 0, kbd.type = kbd.type)
   res
 }
-

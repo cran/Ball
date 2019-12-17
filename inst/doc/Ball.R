@@ -31,9 +31,9 @@ bd.test(x = x, y = y)
 
 ## ------------------------------------------------------------------------
 # generate random perturbation:
-error <- runif(50, min = -0.3, max = 0.3)
+noise <- runif(50, min = -0.3, max = 0.3)
 x <- runif(50, 0, 4*pi)
-y <- cos(x) + error
+y <- cos(x) + noise
 # plot(x, y)
 
 ## ------------------------------------------------------------------------
@@ -41,8 +41,8 @@ bcov.test(x = x, y = y)
 
 ## ------------------------------------------------------------------------
 x <- matrix(runif(50 * 2, -pi, pi), nrow = 50, ncol = 2)
-error <- runif(50, min = -0.1, max = 0.1)
-y <- 2 * sin(x[,1] + x[,2]) + error
+noise <- runif(50, min = -0.1, max = 0.1)
+y <- 2 * sin(x[,1] + x[,2]) + noise
 
 ## ------------------------------------------------------------------------
 bcov.test(x = x, y = y, weight = "prob")
@@ -119,8 +119,8 @@ set.seed(1)
 n <- 150
 p <- 3000
 x <- matrix(rnorm(n * p), nrow = n)
-error <- rnorm(n)
-y <- 3*x[, 1] + 5*(x[, 3])^2 + error
+noise <- rnorm(n)
+y <- 3*x[, 1] + 5*(x[, 3])^2 + noise
 
 ## ------------------------------------------------------------------------
 res <- bcorsis(y = y, x = x)

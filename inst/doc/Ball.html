@@ -378,12 +378,12 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>We use <strong>bd.test</strong> to perform the two-sample test to determine whether two samples come from the same distribution.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">bd.test</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y)</a></code></pre></div>
 <pre><code># 
-#   2-sample Ball Divergence Test
+#   2-sample Ball Divergence Test (Permutation)
 # 
 # data:  x and y 
 # number of observations = 100, group sizes: 50 50
-# replicates = 99
-# bd = 0.092215, p-value = 0.01
+# replicates = 99, weight: constant
+# bd.constant = 0.092215, p-value = 0.01
 # alternative hypothesis: distributions of samples are distinct</code></pre>
 <p>The result of <strong>bd.test</strong> is that <em>p</em>-value &lt; 0.05, which means to reject the null hypothesis, and conclude that two samples are come from different distribution. Consequently, the hypothesis test result is concordant to data generation mechanism.</p>
 </div>
@@ -396,12 +396,12 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>We use <strong>bd.test</strong> to test whether two multivariate random samples are identically distributed.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">bd.test</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y)</a></code></pre></div>
 <pre><code># 
-#   2-sample Ball Divergence Test
+#   2-sample Ball Divergence Test (Permutation)
 # 
 # data:  x and y 
 # number of observations = 100, group sizes: 50 50
-# replicates = 99
-# bd = 0.56664, p-value = 0.01
+# replicates = 99, weight: constant
+# bd.constant = 0.56664, p-value = 0.01
 # alternative hypothesis: distributions of samples are distinct</code></pre>
 <p>The result of <strong>bd.test</strong> is that <em>p</em>-value &lt; 0.05, so we conclude that two samples are not identically distributed.</p>
 </div>
@@ -410,15 +410,15 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>In this example, we will use the “W-shape” data from <a href="https://en.wikipedia.org/wiki/Correlation_and_dependence">WIKI</a> to demonstrate how to perform univariate test of independence with <strong>bcov.test</strong> .</p>
 <p>We generate a dataset containing 50 samples.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="co"># generate random perturbation:</span></a>
-<a class="sourceLine" id="cb9-2" title="2">error &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dv">50</span>, <span class="dt">min =</span> <span class="fl">-0.3</span>, <span class="dt">max =</span> <span class="fl">0.3</span>)</a>
+<a class="sourceLine" id="cb9-2" title="2">noise &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dv">50</span>, <span class="dt">min =</span> <span class="fl">-0.3</span>, <span class="dt">max =</span> <span class="fl">0.3</span>)</a>
 <a class="sourceLine" id="cb9-3" title="3">x &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dv">50</span>, <span class="dv">0</span>, <span class="dv">4</span><span class="op">*</span>pi)</a>
-<a class="sourceLine" id="cb9-4" title="4">y &lt;-<span class="st"> </span><span class="kw">cos</span>(x) <span class="op">+</span><span class="st"> </span>error</a>
+<a class="sourceLine" id="cb9-4" title="4">y &lt;-<span class="st"> </span><span class="kw">cos</span>(x) <span class="op">+</span><span class="st"> </span>noise</a>
 <a class="sourceLine" id="cb9-5" title="5"><span class="co"># plot(x, y)</span></a></code></pre></div>
 <!-- From the plot we can see that $X$ has complex non-linear relation with Y. -->
 <p>Obviously, <span class="math inline">\(X\)</span> is related to <span class="math inline">\(Y\)</span>, but the relationship is non-linear. We use <strong>bcov.test</strong> to perform the test of independence between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">bcov.test</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y)</a></code></pre></div>
 <pre><code># 
-#   Ball Covariance test of independence
+#   Ball Covariance test of independence (Permutation)
 # 
 # data:  x and y
 # number of observations = 50
@@ -432,14 +432,14 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>For multivariate independence test, we will demonstrate the usage of <strong>bcov.test</strong> with the following example: <span class="math inline">\(X=(x_{1}, x_{2})\)</span> come from the bivariate normal distribution. The relation between <span class="math inline">\(Y\)</span> and <span class="math inline">\(X\)</span> is:<br />
 <span class="math display">\[Y=2\sin(x_{1} + x_{2})+ \epsilon, \quad \epsilon \sim U(-0.1, 0.1)\]</span></p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">x &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">runif</span>(<span class="dv">50</span> <span class="op">*</span><span class="st"> </span><span class="dv">2</span>, <span class="op">-</span>pi, pi), <span class="dt">nrow =</span> <span class="dv">50</span>, <span class="dt">ncol =</span> <span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb12-2" title="2">error &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dv">50</span>, <span class="dt">min =</span> <span class="fl">-0.1</span>, <span class="dt">max =</span> <span class="fl">0.1</span>)</a>
-<a class="sourceLine" id="cb12-3" title="3">y &lt;-<span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">sin</span>(x[,<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>x[,<span class="dv">2</span>]) <span class="op">+</span><span class="st"> </span>error</a></code></pre></div>
+<a class="sourceLine" id="cb12-2" title="2">noise &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dv">50</span>, <span class="dt">min =</span> <span class="fl">-0.1</span>, <span class="dt">max =</span> <span class="fl">0.1</span>)</a>
+<a class="sourceLine" id="cb12-3" title="3">y &lt;-<span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">sin</span>(x[,<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>x[,<span class="dv">2</span>]) <span class="op">+</span><span class="st"> </span>noise</a></code></pre></div>
 <!-- The following image shows the distribution of the data: -->
 <!-- ![](QuickStartBCov.png) -->
 <p>We use <strong>bcov.test</strong> to perform multivariate independence test:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">bcov.test</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">weight =</span> <span class="st">&quot;prob&quot;</span>)</a></code></pre></div>
 <pre><code># 
-#   Ball Covariance test of independence
+#   Ball Covariance test of independence (Permutation)
 # 
 # data:  x and y
 # number of observations = 50
@@ -520,12 +520,12 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb16-4" title="4"><span class="co"># Two-Sample Test based on BD :</span></a>
 <a class="sourceLine" id="cb16-5" title="5"><span class="kw">bd.test</span>(<span class="dt">x =</span> dx, <span class="dt">size =</span> <span class="kw">c</span>(<span class="dv">150</span>, <span class="dv">150</span>), <span class="dt">num.permutations =</span> <span class="dv">99</span>, <span class="dt">distance =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 <pre><code># 
-#   2-sample Ball Divergence Test
+#   2-sample Ball Divergence Test (Permutation)
 # 
 # data:  dx 
 # number of observations = 300, group sizes: 150 150
-# replicates = 99
-# bd = 0.14483, p-value = 0.01
+# replicates = 99, weight: constant
+# bd.constant = 0.14483, p-value = 0.01
 # alternative hypothesis: distributions of samples are distinct</code></pre>
 <p>In this example, we firstly calculate the geodesic distance matrix using <strong>nhdist</strong> function in <em>Ball</em> package. Then, pass <em>dx</em> to arguments <em>x</em> and set <em>distance = TRUE</em> to indicate that the <em>x</em> parameter is a distance matrix. Meanwhile, we set the size of each sample <em>size = c(150, 150)</em> and set the replication times <em>num.permutations = 99</em>. The result is that <em>p</em>-value &lt; 0.05, which means that red dots and black dots are not identically distributed.</p>
 </div>
@@ -541,12 +541,12 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb18-7" title="7"><span class="co"># hypothesis test with BD:</span></a>
 <a class="sourceLine" id="cb18-8" title="8"><span class="kw">bd.test</span>(<span class="dt">x =</span> dx, <span class="dt">num.permutations =</span> <span class="dv">99</span>, <span class="dt">size =</span> <span class="kw">c</span>(<span class="dv">9</span>, <span class="dv">9</span>), <span class="dt">distance =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 <pre><code># 
-#   2-sample Ball Divergence Test
+#   2-sample Ball Divergence Test (Permutation)
 # 
 # data:  dx 
 # number of observations = 18, group sizes: 9 9
-# replicates = 99
-# bd = 0.1922, p-value = 0.04
+# replicates = 99, weight: constant
+# bd.constant = 0.1922, p-value = 0.04
 # alternative hypothesis: distributions of samples are distinct</code></pre>
 <p><em>p</em>-value is under 0.05, which means the skull shape differs between male macaques and female macaques.</p>
 </div>
@@ -562,7 +562,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb20-6" title="6"><span class="co"># hypothesis test with BCov:</span></a>
 <a class="sourceLine" id="cb20-7" title="7"><span class="kw">bcov.test</span>(<span class="dt">x =</span> dx, <span class="dt">y =</span> dy, <span class="dt">num.permutations =</span> <span class="dv">99</span>, <span class="dt">distance =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 <pre><code># 
-#   Ball Covariance test of independence
+#   Ball Covariance test of independence (Permutation)
 # 
 # data:  dx and dy
 # number of observations = 39
@@ -580,12 +580,12 @@ The result shows that <em>p</em>-value is less than 0.05, an usual significance 
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">n &lt;-<span class="st"> </span><span class="dv">150</span></a>
 <a class="sourceLine" id="cb22-2" title="2"><span class="kw">bd.test</span>(<span class="kw">rnorm</span>(n), <span class="dt">size =</span> <span class="kw">rep</span>(<span class="dv">50</span>, <span class="dv">3</span>))</a></code></pre></div>
 <pre><code># 
-#   3-sample Ball Divergence Test
+#   3-sample Ball Divergence Test (Permutation)
 # 
 # data:  rnorm(n) 
 # number of observations = 150, group sizes: 50 50 50
-# replicates = 99, kbd.type: sum
-# kbd.sum = 0.0223, p-value = 0.91
+# replicates = 99, weight: constant, kbd.type: sum
+# kbd.sum.constant = 0.0223, p-value = 0.91
 # alternative hypothesis: distributions of samples are distinct</code></pre>
 <p>As the result shown, <em>p</em>-value&gt;0.05, which means we can’t reject the null hypothesis.<br />
 We can also utilize <strong>bd.test</strong> to deal with <span class="math inline">\(K\)</span>-Sample problem in non-Hilbert space following the aforementioned procedure. At the same time, remember to assign size vector to parameter <em>size</em> arguments and set <em>distance = TRUE</em>.</p>
@@ -607,7 +607,7 @@ We can also utilize <strong>bd.test</strong> to deal with <span class="math inli
 <a class="sourceLine" id="cb24-5" title="5"><span class="kw">bcov.test</span>(<span class="dt">x =</span> Dx, <span class="dt">y =</span> Dy, <span class="dt">num.permutations =</span> <span class="dv">99</span>, </a>
 <a class="sourceLine" id="cb24-6" title="6">          <span class="dt">distance =</span> <span class="ot">TRUE</span>, <span class="dt">weight =</span> <span class="st">&quot;constant&quot;</span>)</a></code></pre></div>
 <pre><code># 
-#   Ball Covariance test of independence
+#   Ball Covariance test of independence (Permutation)
 # 
 # data:  Dx and Dy
 # number of observations = 39
@@ -636,7 +636,7 @@ We can also utilize <strong>bd.test</strong> to deal with <span class="math inli
 <p>We bind these data to list <em>example1</em> and <em>example2</em> and pass them to arguments <em>x</em> in <strong>bcov.test</strong> to carry out ball covariance mutual independence test.</p>
 <div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1"><span class="kw">bcov.test</span>(<span class="dt">x =</span> example1, <span class="dt">num.permutations =</span> <span class="dv">199</span>)</a></code></pre></div>
 <pre><code># 
-#   Ball Covariance test of mutual independence
+#   Ball Covariance test of mutual independence (Permutation)
 # 
 # data:  example1
 # number of observations = 50
@@ -645,7 +645,7 @@ We can also utilize <strong>bd.test</strong> to deal with <span class="math inli
 # alternative hypothesis: random variables are dependent</code></pre>
 <div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1"><span class="kw">bcov.test</span>(<span class="dt">x =</span> example2, <span class="dt">num.permutations =</span> <span class="dv">199</span>)</a></code></pre></div>
 <pre><code># 
-#   Ball Covariance test of mutual independence
+#   Ball Covariance test of mutual independence (Permutation)
 # 
 # data:  example2
 # number of observations = 50
@@ -667,8 +667,8 @@ We can also utilize <strong>bd.test</strong> to deal with <span class="math inli
 <a class="sourceLine" id="cb32-2" title="2">n &lt;-<span class="st"> </span><span class="dv">150</span></a>
 <a class="sourceLine" id="cb32-3" title="3">p &lt;-<span class="st"> </span><span class="dv">3000</span></a>
 <a class="sourceLine" id="cb32-4" title="4">x &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rnorm</span>(n <span class="op">*</span><span class="st"> </span>p), <span class="dt">nrow =</span> n)</a>
-<a class="sourceLine" id="cb32-5" title="5">error &lt;-<span class="st"> </span><span class="kw">rnorm</span>(n)</a>
-<a class="sourceLine" id="cb32-6" title="6">y &lt;-<span class="st"> </span><span class="dv">3</span><span class="op">*</span>x[, <span class="dv">1</span>] <span class="op">+</span><span class="st"> </span><span class="dv">5</span><span class="op">*</span>(x[, <span class="dv">3</span>])<span class="op">^</span><span class="dv">2</span> <span class="op">+</span><span class="st"> </span>error</a></code></pre></div>
+<a class="sourceLine" id="cb32-5" title="5">noise &lt;-<span class="st"> </span><span class="kw">rnorm</span>(n)</a>
+<a class="sourceLine" id="cb32-6" title="6">y &lt;-<span class="st"> </span><span class="dv">3</span><span class="op">*</span>x[, <span class="dv">1</span>] <span class="op">+</span><span class="st"> </span><span class="dv">5</span><span class="op">*</span>(x[, <span class="dv">3</span>])<span class="op">^</span><span class="dv">2</span> <span class="op">+</span><span class="st"> </span>noise</a></code></pre></div>
 <p>We perform BCor-SIS procedure and display the top 5 variables index selected by BCor-SIS.</p>
 <div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1">res &lt;-<span class="st"> </span><span class="kw">bcorsis</span>(<span class="dt">y =</span> y, <span class="dt">x =</span> x)</a>
 <a class="sourceLine" id="cb33-2" title="2"><span class="kw">head</span>(res[[<span class="dv">1</span>]], <span class="dt">n =</span> <span class="dv">5</span>)</a></code></pre></div>
