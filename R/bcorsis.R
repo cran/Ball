@@ -20,8 +20,8 @@ bcor <- function(x, y, distance = FALSE, weight = FALSE) {
   #
   if(distance == FALSE) {
     if(p != 1) {
-      x <- as.double(as.vector(as.matrix(dist(x, diag = TRUE))))
-      y <- as.double(as.vector(as.matrix(dist(y, diag = TRUE))))
+      x <- as.double(as.vector(dist(x)))
+      y <- as.double(as.vector(dist(y)))
       dst_y <- as.integer(1)
       dst_x <- as.integer(1)
     } else {
@@ -31,8 +31,10 @@ bcor <- function(x, y, distance = FALSE, weight = FALSE) {
       dst_x <- as.integer(0)
     }
   } else {
-    x <- as.double(as.vector(x))
-    y <- as.double(as.vector(y))
+    x <- x[lower.tri(x)]
+    y <- y[lower.tri(y)]
+    x <- as.double(x)
+    y <- as.double(y)
     dst_y <- as.integer(1)
     dst_x <- as.integer(1)
   }
