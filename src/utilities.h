@@ -64,8 +64,8 @@ void Category_distance(const double *x, double **Dx, int n);
 void distance(double *x, double *Dx, int *n, int *d);
 void shuffle(int *array, int *N);
 void shuffle_value(double *array, int *N);
-int pending_interrupt();
-void print_stop_message();
+int pending_interrupt(void);
+void print_stop_message(void);
 void resample(int *i_perm, int *i_perm_inv, int *n);
 void shuffle_indicator_inv_matrix(int **i_perm_matrix, int **i_perm_matrix_inv, int *init_perm, int *init_perm_inv,
                                   int num_permutation, int num);
@@ -80,7 +80,7 @@ void shuffle_value_matrix(double **value_matrix, double *init_value, int num_per
 void resample3(int *i_perm, int *i_perm_tmp, int n, int *n1);
 void ranksort(int *n, int *zrank, double *z, int *zidx);
 void distance2matrix3d(double *distance, double ***distance_matrix3d, int n, int v);
-void declare_gwas_screening();
+void declare_gwas_screening(void);
 void declare_gwas_refining(int i, int refine_num);
 void print_pvalue(double pvalue);
 void print_cost_time(int second);

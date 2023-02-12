@@ -1435,7 +1435,7 @@ void R_CheckUserInterrupt_fn(void *dummy) {
 }
 #endif
 
-int pending_interrupt() {
+int pending_interrupt(void) {
     int interrupt_status = 0;
 #ifdef R_BUILD
     interrupt_status = !(R_ToplevelExec(R_CheckUserInterrupt_fn, NULL));
@@ -1443,7 +1443,7 @@ int pending_interrupt() {
     return interrupt_status;
 }
 
-void print_stop_message() {
+void print_stop_message(void) {
 #ifdef R_BUILD
     Rprintf("Process stop due to user interruption! \n");
 #else
@@ -1452,7 +1452,7 @@ void print_stop_message() {
 
 }
 
-void declare_gwas_screening() {
+void declare_gwas_screening(void) {
 #ifdef R_BUILD
     Rprintf("=========== Pre-screening SNPs ===========\n");
 #else
@@ -1495,7 +1495,8 @@ void print_cost_time(int second) {
 }
 
 void int_to_string(char str[], int number) {
-    sprintf(str, "%d", number);
+    // sprintf(str, "%d", number);
+    snprintf(str, 3, "%d", number%100u);
 }
 
 void beautify_time(char result[], int seconds) {
